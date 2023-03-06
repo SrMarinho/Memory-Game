@@ -1,44 +1,70 @@
 <template>
   <div class="container">
-    <div v-for="column in columns" :key="column.id">
-      <div class="card" v-for="row in rows" :key="row.id">
-        <div class="backFace">{{ cardsNumbersMap[0] != null? cardsNumbersMap[0][0] : '' }}</div>
-        <div class="frontFace"></div>
+      <div class="rows" v-for="row in rows" :key="row.id">
+        <div class="columns">
+          <div class="containerCard" v-for="column in columns" :key="column.id">
+            <div class="card" @click="revelCard(column - 1, row - 1)">
+              <div class="backFaceCard">{{ row }}</div>
+              <div class="frontFaceCard"></div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
   </div>
-  {{ cardsNumbersMap }}
 </template>
+
 <script>
 export default {
   data() {
     return {
       rows: 3,
       columns: 4,
-      cardsNumbersMap: null
+      cards_map: []
     }
   },
   mounted() {
-    this.cardsNumbersMap = []
-    for (let column = 0; column < this.columns; column++) {
-      this.cardsNumbersMap.push([])
-      for (let row = 0; row < this.rows; row++) {
-          this.cardsNumbersMap[column].push((Math.random() * 10).toFixed(0));
+    var myCards = document.getElementsByClassName("card")
+
+    var numbers = []
+
+    for (let index = 0; index < (this.rows * this.columns) / 2; index++) {
+      numbers.push(index, index)
+    }
+
+    numbers = numbers.sort((a, b) => 0.5 - Math.random());
+
+    for (let index = 0; index < myCards.length; index++) {
+      myCards[index].lastChild.innerHTML = numbers[index]
+    }
+
+    for (let i = 0; i < this.rows; i++) {
+      this.cards_map.push([])
+      for (let j = 0; j < this.columns; j++) {
+        this.cards_map[i].push(j)
       }
     }
-    console.log(this.cardsNumbersMap[0][0]);
+    console.log(this.cards_map)
+  },
+  methods: {
+    revelCard: function (x, y) {
+      var myCards = document.getElementsByClassName("card")
+      myCards[(y * this.columns) + x].toggleAttribute("cardReveled")
+    }
   }
 }
 </script>
 
 <style>
+:root {
+  --cardAngle: 0deg;
+}
+
 * {
   margin: 0;
   padding: 0;
 }
 
 body {
-  width: 100%;
   height: 100vh;
   background-color: #303030;
   display: flex;
@@ -46,49 +72,56 @@ body {
   align-items: center;
 }
 
-.container {
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.columns {
   display: flex;
   flex-direction: row;
 }
 
+.containerCard {
+  perspective: 400px;
+}
+
 .card {
-  position: relative;
-  width: 80px;
-  height: 100px;
-  margin: 5px;
   transform-style: preserve-3d;
-  backface-visibility: hidden;
+  transform-origin: center center;
+  margin: 10px;
+  transition: 0.3s ease-in-out;
 }
 
-.frontFace, .backFace {
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 80px;
-  height: 100px;
-  background-color: white;
-  border-radius: 5px;
-  border: white 1px solid;
-}
-
-.frontFace {
-  background-image: url("https://img.freepik.com/vetores-gratis/cor-verde-lineart-de-fundo-padrao_487879-550.jpg?w=900&t=st=1677875918~exp=1677876518~hmac=fa0f324cb7c4916ab21dca551183bed81d140a436f0869faf3488d588ae520fb");
-  background-size: contain;
-}
-
-.backFace {
-  background-color: white;
+.card[cardReveled] {
   transform: rotateY(180deg);
 }
 
-.card:hover {
-  animation: selectecCard 0.5s forwards ease-in-out;
+.backFaceCard {
+  position: absolute;
+  width: 120px;
+  height: 150px;
+  background-image: url("https://img.freepik.com/vetores-gratis/cor-verde-lineart-de-fundo-padrao_487879-550.jpg?w=900&t=st=1677875918~exp=1677876518~hmac=fa0f324cb7c4916ab21dca551183bed81d140a436f0869faf3488d588ae520fb");
+  background-size: contain;
+  border-radius: 5px;
+  backface-visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
 }
 
-@keyframes selectecCard {
-  100% {
-    transform: rotateY(180deg);
-  }
+.frontFaceCard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  width: 119px;
+  height: 149px;
+  background-color: black;
+  border-radius: 5px;
+  font-size: 72px;
+  transform: rotateY(180deg);
 }
+
 </style>
