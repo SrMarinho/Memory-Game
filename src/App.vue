@@ -1,64 +1,85 @@
 <template>
   <div class="container">
-      <div class="rows" v-for="row in rows" :key="row.id">
-        <div class="columns">
-          <div class="containerCard" v-for="column in columns" :key="column.id">
-            <div class="card" @click="revelCard(column - 1, row - 1)">
-              <div class="backFaceCard">{{ row }}</div>
-              <div class="frontFaceCard"></div>
-            </div>
-          </div>
-        </div>
+    <div class="cardBox" v-for="row in rows" :key="row.id">
+      <div class="card" v-for="column in columns" :key="column.id" @click="revelCard(column - 1, row - 1)" :cardReveled="cardsReveledMap[row - 1][column - 1] || selectedCards[row - 1][column - 1]">
+        <div class="frontCard">{{ cards_map[((row - 1) * columns) + (column - 1)] }}</div>
+        <div class="backCard"></div>
       </div>
-  </div>
+    </div>
+  </div>  
 </template>
 
 <script>
 export default {
   data() {
     return {
-      rows: 3,
-      columns: 4,
-      cards_map: []
+      rows: 0,
+      columns: 0,
+      cards_map: [],
+      cardsReveledMap: [],
+      selectedCards: [],
+      previewsSelectedCard: []
     }
   },
   mounted() {
-    var myCards = document.getElementsByClassName("card")
+    var cards = document.getElementsByClassName("card")
+    
+    this.rows = 3
+    this.columns = 4
 
-    var numbers = []
-
-    for (let index = 0; index < (this.rows * this.columns) / 2; index++) {
-      numbers.push(index, index)
-    }
-
-    numbers = numbers.sort((a, b) => 0.5 - Math.random());
-
-    for (let index = 0; index < myCards.length; index++) {
-      myCards[index].lastChild.innerHTML = numbers[index]
+    for (let i = 0; i < (this.rows * this.columns) / 2; i++) {
+      this.cards_map.push(i, i)
     }
 
     for (let i = 0; i < this.rows; i++) {
-      this.cards_map.push([])
+      this.cardsReveledMap.push([])
+      this.selectedCards.push([])
       for (let j = 0; j < this.columns; j++) {
-        this.cards_map[i].push(j)
+        this.cardsReveledMap[i].push(false)
+        this.selectedCards[i].push(false)
       }
     }
-    console.log(this.cards_map)
+
+    this.cards_map = this.shuffle(this.cards_map)   
   },
   methods: {
-    revelCard: function (x, y) {
-      var myCards = document.getElementsByClassName("card")
-      myCards[(y * this.columns) + x].toggleAttribute("cardReveled")
+    revelCard: function (row, column) {
+      var count = 0
+      this.selectedCards[column][row] = true
+      this.selectedCards.forEach(element => {
+        element.forEach(item => {
+          item == true? count += 1 : ''
+          this.previewsSelectedCard = [column, row]
+        })
+      });
+      if (count == 2) {
+        setTimeout(() => {
+          for (let i = 0; i < this.selectedCards.length; i++) {
+            for (let j = 0; j < this.selectedCards[i].length; j++) {
+              this.selectedCards[i][j] = false
+              if (this.previewsSelectedCard[0] == this.selectedCards[i][j]) {
+                
+              }
+            }
+          }
+        }, 500);
+      }
+      // this.cardsReveledMap[column][row] = true
+    },
+    shuffle: function (matrix) {
+      for (let i = 0; i < matrix.length; i++) {
+        var j = Math.floor(Math.random() *  i);
+        var aux = matrix[i]
+        matrix[i] = matrix[j]
+        matrix[j] = aux
+      }
+      return matrix
     }
   }
 }
 </script>
 
 <style>
-:root {
-  --cardAngle: 0deg;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -72,56 +93,41 @@ body {
   align-items: center;
 }
 
-.rows {
-  display: flex;
-  flex-direction: column;
-}
-
-.columns {
+.cardBox {
+  perspective: 400px;
   display: flex;
   flex-direction: row;
 }
 
-.containerCard {
-  perspective: 400px;
-}
-
-.card {
+.cardBox .card {
   transform-style: preserve-3d;
-  transform-origin: center center;
-  margin: 10px;
+  margin: 5px;
   transition: 0.3s ease-in-out;
 }
 
-.card[cardReveled] {
+.cardBox .card[cardReveled = true] {
   transform: rotateY(180deg);
 }
 
-.backFaceCard {
+.cardBox .card .backCard {
+  width: 119px;
+  height: 149px;
+  background-image: linear-gradient(45deg, #00FFFF, #FF00FF);
+  border-radius: 10px;
+}
+
+.cardBox .card .frontCard {
   position: absolute;
   width: 120px;
   height: 150px;
-  background-image: url("https://img.freepik.com/vetores-gratis/cor-verde-lineart-de-fundo-padrao_487879-550.jpg?w=900&t=st=1677875918~exp=1677876518~hmac=fa0f324cb7c4916ab21dca551183bed81d140a436f0869faf3488d588ae520fb");
-  background-size: contain;
-  border-radius: 5px;
-  backface-visibility: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
-}
-
-.frontFaceCard {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  width: 119px;
-  height: 149px;
   background-color: black;
-  border-radius: 5px;
-  font-size: 72px;
+  color: white;
+  backface-visibility: hidden;
   transform: rotateY(180deg);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 72px;
 }
-
 </style>
